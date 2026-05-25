@@ -11,7 +11,7 @@ async function buscarDadosExternos(campanhaId) {
     const { data } = await axios.get(`https://api.ads-fake.com/data?campanha=${campanhaId}`, {
       timeout: 3000,
     });
-    console.log(data);
+    // console.log(data);
     return data;
   } catch {
     // console.log('errro aquii');
@@ -48,7 +48,7 @@ router.post('/webhook', async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({
       error: 'Erro ao cadastrar métrica!'
     });
@@ -81,7 +81,7 @@ router.get('/campanhas/:id/metricas', async (req, res) => {
     res.json(result.rows[0]);
 
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({
       error: 'Erro ao realizar a consulta!'
     });
@@ -94,7 +94,7 @@ router.get('/campanhas', async (req, res) => {
     const result = await db.query('SELECT * FROM campanhas ORDER BY id');
     res.json(result.rows);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'Erro ao listar campanhas!' });
   }
 });
@@ -146,7 +146,7 @@ router.get('/campanhas/:id/externos', async (req, res) => {
       fonte_externa: externo,
     });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({ error: 'Erro ao consolidar dados externos!' });
   }
 });
