@@ -7,11 +7,6 @@ node_modules/
 # Arquivos gerados (output do Faker e do Python)
 output/
 
-# Claude Code
-.claude/
-CLAUDE.md
-memory/
-
 # Python
 __pycache__/
 *.pyc
