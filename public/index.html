@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing SVN — Análise de Campanhas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body>
+    <nav>
+      <div class="nav-logo">Marketing<em>SVN</em></div>
+      <div class="status-pill">
+        <div class="dot" id="dot"></div>
+        <span id="status-txt">verificando...</span>
+      </div>
+    </nav>
+
+    <div class="hero">
+      <div class="wrap">
+        <div class="hero-tag">Teste Técnico · Marketing SVN</div>
+        <h1>Análise de<br><span class="grad">Campanhas Digitais</span></h1>
+        <p>Stack Utilizada:</p>
+        <div class="tags">
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Node.js · Express</span>
+          <span class="tag">Faker.js</span>
+          <span class="tag">Axios</span>
+          <span class="tag">Python · scikit-learn</span>
+          <span class="tag">Chart.js</span>
+          <span class="tag">Docker</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+
+      <section id="sql">
+        <div class="sec-hd">
+          <span class="sec-badge bp">### Parte 1 ###</span>
+          <span class="sec-title">SQL Analytics</span>
+          <div class="sep"></div>
+        </div>
+
+        <div class="g2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-label">Query — CTR e CPA por Campanha</div>
+            <div class="code">
+              <pre>
+                  <span class="kw">SELECT</span> 
+                    campanhas.nome,
+                    <span class="fn">ROUND</span>((SUM(metricas.cliques)::DECIMAL / 
+                    <span class="fn">NULLIF</span>(SUM(metricas.impressoes), 0)) * 100, 2) <span class="kw">AS</span> CTR,
+                    <span class="fn">ROUND</span>(campanhas.orcamento / 
+                    <span class="fn">NULLIF</span>(SUM(metricas.conversoes), 0), 2) <span class="kw">AS</span> CPA
+                  <span class="kw">FROM</span> campanhas
+                      <span class="kw">INNER JOIN</span> metricas <span class="kw">ON</span> metricas.campanha_id = campanhas.id
+                  <span class="kw">GROUP BY</span> 
+                    campanhas.id, campanhas.nome, campanhas.orcamento
+                  <span class="kw">ORDER BY</span> ctr <span class="kw">DESC</span>;
+              </pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-label">Query — Melhor ROI (orçamento vs conversões)</div>
+            <div class="code">
+              <pre>
+                <span class="kw">SELECT</span> 
+                  campanhas.nome, 
+                  SUM(metricas.conversoes) * 100 <span class="kw">AS</span> Receita,
+                  <span class="fn">ROUND</span>(((SUM(metricas.conversoes) * 100 - campanhas.orcamento) / 
+                  <span class="fn">NULLIF</span>(campanhas.orcamento, 0)) * 100, 2) <span class="kw">AS</span> ROI_PCT, 
+                  <span class="fn">RANK</span>() 
+                  <span class="kw">OVER</span> (
+                    <span class="kw">ORDER BY</span> (SUM(metricas.conversoes)*100-campanhas.orcamento) / 
+                    <span class="fn">NULLIF</span>(campanhas.orcamento,0) <span class="kw">DESC</span>
+                  ) <span class="kw">AS</span> ranking
+                <span class="kw">FROM</span> campanhas
+                  <span class="kw">INNER JOIN</span> metricas <span class="kw">ON</span> metricas.campanha_id = campanhas.id
+                <span class="kw">GROUP BY</span> campanhas.id <span class="kw">ORDER BY</span> ranking;
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Resultados — CTR, CPA e ROI por Campanha</div>
+          <div class="tbl-wrap">
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Campanha</th>
+                  <th>Orçamento</th>
+                  <th>Impressões</th>
+                  <th>Cliques</th>
+                  <th>Conversões</th>
+                  <th>CTR</th>
+                  <th>CPA</th>
+                  <th>ROI</th>
+                  <th>Ranking</th>
+                </tr>
+              </thead>
+
+              <tbody id="sql-body">
+                <tr>
+                  <td colspan="9" style="text-align:center; color:var(--muted); padding:28px">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="dados">
+
+        <div class="sec-hd">
+          <span class="sec-badge bb">### Parte 2 ###</span>
+          <span class="sec-title">Dados e Mensuração</span>
+          <div class="sep"></div>
+        </div>
+
+        <div class="g3" style="margin-bottom:18px">
+          
+          <div class="card">
+            <div class="card-label">CTR — Click-Through Rate (%)</div>
+            <div style="position:relative;height:190px">
+              <canvas id="ch-ctr"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-label">Taxa de Conversão (%)</div>
+            <div style="position:relative;height:190px">
+            <canvas id="ch-taxa"></canvas>
+          </div>
+
+          </div>
+            <div class="card"><div class="card-label">ROAS — Return on Ad Spend (%)</div>
+              <div style="position:relative;height:190px">
+                <canvas id="ch-roas"></canvas>
+              </div>
+            </div>
+        </div>
+
+        <div class="card">
+          
+          <div class="card-label">
+            Relatório Completo — gerado por <code style="color:var(--blue)">npm run generate</code>
+          </div>
+          
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Campanha</th>
+                  <th>Orçamento</th>
+                  <th>Impressões</th>
+                  <th>Cliques</th>
+                  <th>Conversões</th>
+                  <th>Taxa Conv.</th>
+                  <th>ROAS</th>
+                  <th>ROI</th>
+                </tr>
+              </thead>
+              <tbody id="dados-body">
+                <tr>
+                  <td colspan="8" style="text-align:center;color:var(--muted);padding:28px">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="api">
+        
+        <div class="sec-hd">
+          <span class="sec-badge bg">### Parte 3 ###</span>
+          <span class="sec-title">Integração de Sistemas — API REST</span>
+          <div class="sep"></div>
+        </div>
+
+        <div class="eps">
+          <div class="ep">
+            <span class="method mpost">POST</span>
+            <span class="ep-path">/webhook</span>
+            <span class="ep-desc">Recebe dados de campanha (Facebook Ads simulado) e insere na tabela metricas</span>
+          </div>
+          
+          <div class="ep">
+            <span class="method mget">GET</span>
+            <span class="ep-path">/campanhas/:id/metricas</span>
+            <span class="ep-desc">Retorna CTR e CPA consolidados por campanha a partir do banco de dados</span>
+          </div>
+
+          <div class="ep">
+            <span class="method mget">GET</span>
+            <span class="ep-path">/campanhas/:id/externos</span>
+            <span class="ep-desc">Bônus — consolida dados do banco com fonte externa via Axios (com fallback simulado)</span>
+          </div>
+        </div>
+
+        <div class="g2">
+          <div class="card">
+            <div class="card-label">Testar — POST /webhook</div>
+            
+            <form id="form-hook" style="margin-top:12px">
+              <div class="fgrid">
+                <div class="fg"><label>Campanha</label>
+                  <select name="campanha_id">
+                    <option value="1">1 — Google Ads</option>
+                    <option value="2">2 — Facebook Ads</option>
+                    <option value="3">3 — Instagram Ads</option>
+                  </select>
+                </div>
+                
+                <div class="fg">
+                  <label>Impressões</label>
+                  <input type="number" name="impressoes" value="48000">
+                </div>
+                
+                <div class="fg">
+                  <label>Cliques</label>
+                  <input type="number" name="cliques" value="2400">
+                </div>
+                
+                <div class="fg">
+                  <label>Conversões</label>
+                  <input type="number" name="conversoes" value="192">
+                </div>
+                
+                <div class="fg" style="grid-column:1/-1">
+                  <label>Custo por Clique (R$)</label>
+                  <input type="number" name="custo_por_clique" step="0.01" value="2.08">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-p">▶ Enviar Webhook</button>
+            </form>
+
+            <div id="res-hook" class="res"></div>
+          </div>
+
+          <div class="card">
+            
+            <div class="card-label" style="margin-bottom:14px">Consultar — GET /campanhas/:id/metricas</div>
+            
+            <div style="display:flex;gap:10px;align-items:flex-end">
+              <div class="fg" style="flex:1">
+                <label>Campanha</label>
+                <select id="sel-camp">
+                  <option value="1">1 — Google Ads</option>
+                  <option value="2">2 — Facebook Ads</option>
+                  <option value="3">3 — Instagram Ads</option>
+                </select></div>
+                <button class="btn btn-s" id="btn-met">Consultar</button>
+            </div>
+
+            <div id="res-met" class="res"></div>
+
+            <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+              <div class="card-label" style="margin-bottom:10px">Bônus Axios — GET /campanhas/:id/externos</div>
+              <button class="btn btn-s" id="btn-ext" style="width:100%">Buscar Dados Externos</button>
+              <div id="res-ext" class="res"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="bonus">
+
+        <div class="sec-hd">
+          <span class="sec-badge ba">Bônus</span>
+          <span class="sec-title">Previsão com Regressão Linear — Python · scikit-learn</span>
+          <div class="sep"></div>
+        </div>
+
+        <div class="g2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-label">Conversões: Atual vs Previsto (cliques +10%)</div>
+            <div style="position:relative;height:220px"><canvas id="ch-prev"></canvas></div>
+          </div>
+        
+          <div class="card">
+            <div class="card-label">Resultados do Modelo — <code style="color:var(--blue)">python scripts/predict.py</code></div>
+            <div id="prev-body" style="padding-top:6px">
+              <div style="text-align:center;color:var(--muted);padding:28px">Carregando previsões...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer>
+      Teste Técnico · Marketing SVN &nbsp;·&nbsp; PostgreSQL · Node.js · Python · Chart.js · Docker
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>

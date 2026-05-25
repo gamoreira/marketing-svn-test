@@ -1,0 +1,23 @@
+{
+  "name": "marketing-svn-test",
+  "version": "1.0.0",
+  "description": "Sistema de Análise de Campanhas Digitais com Integração em Tempo Real",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "nodemon api/server.js",
+    "generate": "node scripts/generate-data.js",
+    "seed": "node scripts/seed-demo.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.0.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "fast-csv": "^5.0.1",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
